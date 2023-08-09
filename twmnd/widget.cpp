@@ -80,6 +80,8 @@ void Widget::onDataReceived()
         QByteArray data(size, '\0');
         m_socket.readDatagram(data.data(), size);
         std::istringstream iss (data.data());
+        //QString qString(data);
+        //std::cout << "XML:\n" << qString.toStdString() << std::endl;
         boost::property_tree::xml_parser::read_xml(iss, tree);
         boost::property_tree::ptree& root = tree.get_child("root");
         boost::property_tree::ptree::iterator it;
@@ -124,6 +126,26 @@ bool Widget::startMessageCommand(const Message& msg, const char* key) {
 
 void Widget::appendMessageToQueue(const Message& msg)
 {
+    bool hasPort = false;
+
+    for (const auto& key : msg.data.keys()) {
+        const Message::Data& value = msg.data.value(key);
+        if (key == "port") {
+                hasPort = true;
+        }
+        //if (value) {
+        //    const char* typeName = QMetaType::typeName(value->type());
+        //    std::string cont = value->toString().toStdString();
+        //    std::cout << "Key: " << key.toStdString() << "\t, Type: " << typeName << ", Value: " << cont;
+        //    std::cout << std::endl;
+        //} else {
+        //    std::cout << "Key: " << key.toStdString() << "\t, Value is absent" << std::endl;
+        //}
+    }
+
+    if (!hasPort)
+        return;
+
     if (msg.data["id"] && !m_messageQueue.isEmpty()) {
         if (update(msg))
             return;
